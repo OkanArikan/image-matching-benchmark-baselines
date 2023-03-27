@@ -1,0 +1,10 @@
+numpy<1.24
+h5py
+torch
+torchvision
+tqdm
+matplotlib
+opencv-python
+kornia
+coremltools
+pyyaml

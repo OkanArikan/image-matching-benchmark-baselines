@@ -41,7 +41,7 @@ def convert_imc(kps, resps):
     return keypoints, scales, angles, responses
 
 
-def extract_features(img_fname, keypoint_net, device, MAX_KP, max_size, norm_desc):
+def extract_features(img_fname, superpoint, device, MAX_KP, max_size, norm_desc):
     img = cv2.cvtColor(cv2.imread(img_fname), cv2.COLOR_BGR2RGB)
     timg = K.image_to_tensor(img, False).float()/255.
     timg = timg.to(device)

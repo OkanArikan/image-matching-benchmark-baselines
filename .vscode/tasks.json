@@ -1,0 +1,26 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Python",
+        "command": "python",
+        "args": ["${file}"],
+        "problemMatcher": {
+          "owner": "py",
+          "fileLocation": ["relative", "${workspaceFolder}"],
+          "pattern": {
+            "regexp": "^(.*)+s$",
+            "message": 1
+          }
+        }
+      },
+      {
+        "label": "Update Python Dependencies",
+        "type": "shell",
+        "command": "${command:python.interpreterPath} -m pip install -r requirements.txt --upgrade"
+      },
+    ]
+  }
+  

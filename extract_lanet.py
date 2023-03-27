@@ -138,54 +138,63 @@ if __name__ == '__main__':
     keypoint_net.load_state_dict(checkpoint['model_state'])
     keypoint_net.eval()
     keypoint_net=keypoint_net.to(device)
-    INPUT_DIR = opt.datasets_folder
-    modelname = f'{opt.method_name}_{opt.model_version}'
-    if opt.norm_desc:
-        modelname+='_norm'
-    if opt.resize_image_to > 0:
-        modelname+= f'_{opt.resize_image_to}'
-    else:
-        modelname+= f'_fullres'
-    OUT_DIR = os.path.join(opt.save_path, modelname)
-    os.makedirs(OUT_DIR, exist_ok=True)
-    print (f"Will save to {OUT_DIR}")
-    if opt.dataset == 'all':
-        datasets =  ['phototourism', 'pragueparks']#[x for x in os.listdir(INPUT_DIR) if (os.path.isdir(os.path.join(INPUT_DIR, x)))]
-    else:
-        datasets = [opt.dataset]
-    for ds in datasets:
-        ds_in_path = os.path.join(INPUT_DIR, ds)
-        ds_out_path = os.path.join(OUT_DIR, ds)
-        os.makedirs(ds_out_path, exist_ok=True)
-        seqs = [x for x in os.listdir(ds_in_path) if os.path.isdir(os.path.join(ds_in_path, x))]
-        for seq in seqs:
-            print (seq)
-            if os.path.isdir(os.path.join(ds_in_path, seq, 'set_100')):
-                seq_in_path = os.path.join(ds_in_path, seq, 'set_100', 'images')
-            else:
-                seq_in_path = os.path.join(ds_in_path, seq)
-            seq_out_path = os.path.join(ds_out_path, seq)
-            os.makedirs(seq_out_path, exist_ok=True)
-            img_fnames = os.listdir(seq_in_path)
-            num_kp = []
-            with h5py.File(f'{seq_out_path}/keypoints.h5', mode='w') as f_kp, \
-                 h5py.File(f'{seq_out_path}/descriptors.h5', mode='w') as f_desc, \
-                 h5py.File(f'{seq_out_path}/scores.h5', mode='w') as f_score, \
-                 h5py.File(f'{seq_out_path}/angles.h5', mode='w') as f_ang, \
-                 h5py.File(f'{seq_out_path}/scales.h5', mode='w') as f_scale:
-                for img_fname in tqdm(img_fnames):
-                    img_fname_full = os.path.join(seq_in_path, img_fname)
-                    key = os.path.splitext(os.path.basename(img_fname))[0]
-                    kps, resps, descs = extract_features(img_fname_full, keypoint_net, device,
-                                                         opt.num_kp,
-                                                         opt.resize_image_to,
-                                                         opt.norm_desc)
-                    keypoints, scales, angles, responses = convert_imc(kps, resps)
-                    f_desc[key] = descs.reshape(-1, 256).detach().cpu().numpy()
-                    f_score[key] = responses
-                    f_ang[key] = angles
-                    f_kp[key] = keypoints
-                    f_scale[key] = scales
-                    num_kp.append(len(keypoints))
-                print(f'Finished processing "{ds}/{seq}" -> {np.array(num_kp).mean()} features/image')
-    print (f"Result is saved to {OUT_DIR}")
+
+    img_fname_full = '/tmp/colmap/images/frame_192_color.jpg'
+    kps, resps, descs = extract_features(img_fname_full, keypoint_net, device,
+                                                            opt.num_kp,
+                                                            opt.resize_image_to,
+                                                            opt.norm_desc)
+
+
+    if False:
+        INPUT_DIR = opt.datasets_folder
+        modelname = f'{opt.method_name}_{opt.model_version}'
+        if opt.norm_desc:
+            modelname+='_norm'
+        if opt.resize_image_to > 0:
+            modelname+= f'_{opt.resize_image_to}'
+        else:
+            modelname+= f'_fullres'
+        OUT_DIR = os.path.join(opt.save_path, modelname)
+        os.makedirs(OUT_DIR, exist_ok=True)
+        print (f"Will save to {OUT_DIR}")
+        if opt.dataset == 'all':
+            datasets =  ['phototourism', 'pragueparks']#[x for x in os.listdir(INPUT_DIR) if (os.path.isdir(os.path.join(INPUT_DIR, x)))]
+        else:
+            datasets = [opt.dataset]
+        for ds in datasets:
+            ds_in_path = os.path.join(INPUT_DIR, ds)
+            ds_out_path = os.path.join(OUT_DIR, ds)
+            os.makedirs(ds_out_path, exist_ok=True)
+            seqs = [x for x in os.listdir(ds_in_path) if os.path.isdir(os.path.join(ds_in_path, x))]
+            for seq in seqs:
+                print (seq)
+                if os.path.isdir(os.path.join(ds_in_path, seq, 'set_100')):
+                    seq_in_path = os.path.join(ds_in_path, seq, 'set_100', 'images')
+                else:
+                    seq_in_path = os.path.join(ds_in_path, seq)
+                seq_out_path = os.path.join(ds_out_path, seq)
+                os.makedirs(seq_out_path, exist_ok=True)
+                img_fnames = os.listdir(seq_in_path)
+                num_kp = []
+                with h5py.File(f'{seq_out_path}/keypoints.h5', mode='w') as f_kp, \
+                    h5py.File(f'{seq_out_path}/descriptors.h5', mode='w') as f_desc, \
+                    h5py.File(f'{seq_out_path}/scores.h5', mode='w') as f_score, \
+                    h5py.File(f'{seq_out_path}/angles.h5', mode='w') as f_ang, \
+                    h5py.File(f'{seq_out_path}/scales.h5', mode='w') as f_scale:
+                    for img_fname in tqdm(img_fnames):
+                        img_fname_full = os.path.join(seq_in_path, img_fname)
+                        key = os.path.splitext(os.path.basename(img_fname))[0]
+                        kps, resps, descs = extract_features(img_fname_full, keypoint_net, device,
+                                                            opt.num_kp,
+                                                            opt.resize_image_to,
+                                                            opt.norm_desc)
+                        keypoints, scales, angles, responses = convert_imc(kps, resps)
+                        f_desc[key] = descs.reshape(-1, 256).detach().cpu().numpy()
+                        f_score[key] = responses
+                        f_ang[key] = angles
+                        f_kp[key] = keypoints
+                        f_scale[key] = scales
+                        num_kp.append(len(keypoints))
+                    print(f'Finished processing "{ds}/{seq}" -> {np.array(num_kp).mean()} features/image')
+        print (f"Result is saved to {OUT_DIR}")
